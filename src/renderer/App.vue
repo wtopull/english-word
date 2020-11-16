@@ -10,6 +10,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-/* CSS */
+<style>
+@import url("~@/assets/css/public-flex.css");
+@import url("~@/assets/css/materialize.min.css");
 </style>

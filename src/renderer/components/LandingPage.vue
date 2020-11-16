@@ -1,26 +1,195 @@
 <template>
     <div id="wrapper">
-        <!-- <img id="logo" src="~@/assets/logo.png" alt="electron-vue"> -->
         <main>
-            <div class="left-side">
-                <span class="title">
-                    你来啦
-                </span>
+            <div class="inps flex_items">
+                <!-- <div class="input-field">
+                    <input value="a,b,c,d,e,f,g,h,i,j,k,l" id="first_name2" type="text" class="validate">
+                </div> -->
+                <div class="englishs">
+                    <ul class="flex">
+                        <li v-for="(item,index) in arrs" :key="index">{{item}}</li>
+                    </ul>
+                </div>
+                <div class="inps_btn flex_items j_sb">
+                    <a class="waves-effect waves-light btn" @click="autoHandle"><i class="material-icons left">autorenew</i>随机</a>
+                    <a class="waves-effect waves-light btn" @click="copyHandle"><i class="material-icons left">content_copy</i>复制</a>
+                    <a class="waves-effect waves-light btn" @click="searchHandle"><i class="material-icons left">search</i>查找</a>
+                </div>
             </div>
-
+            <div class="s_box">
+                <h6>结果：2000个单词，12个为一组，有序组合共{{n}}组</h6>
+                <h6>结果：2000个单词，12个为一组，无序组合共{{n1}}组</h6>
+                <ul>
+                    <li class="s_item  flex_items j_sb" v-for="(item, index) in pls" :key="index">
+                        <span>{{item}}</span>
+                        <a class="waves-effect waves-light btn" @click="copyHandle"><i class="material-icons left">content_copy</i>复制</a>
+                    </li>
+                </ul>
+            </div>
         </main>
     </div>
 </template>
 
 <script>
-import SystemInformation from "./LandingPage/SystemInformation";
-
+import _ from "lodash";
+import arrs from "../assets/js/index.js";
+import arrsAll from "../assets/js/arrs.js";
 export default {
     name: "landing-page",
-    components: { SystemInformation },
+    data() {
+        return {
+            n: 1,
+            n1: 1,
+            arrs: [],
+            pls: [
+                "A",
+                "B",
+                "C",
+                "D",
+                "E",
+                "F",
+                "G",
+                "H",
+                "I",
+                "J",
+                "K",
+                "L",
+                "A",
+                "B",
+                "C",
+                "D",
+                "E",
+                "F",
+                "G",
+                "H",
+                "I",
+                "J",
+                "K",
+                "L",
+            ],
+        };
+    },
+    mounted() {
+        this.arrs = arrs["a2"];
+        this.perm(["01", "02", "03", "04"]);
+        this.initNum(2000, 12);
+    },
     methods: {
-        open(link) {
-            this.$electron.shell.openExternal(link);
+        // 随机
+        autoHandle() {
+            // let arr = _.chunk(arrsAll["arrs"], 2);
+            // 1
+            // let allArr = this.perm(...arr);
+            // console.log(allArr);
+
+            // 2
+            // this.perm2();
+            // 3
+            // this.perm3();
+            // 4
+            this.perm4();
+        },
+        // 复制
+        copyHandle() {},
+        // 查找
+        searchHandle() {},
+        //排列组合1
+        perm() {
+            return Array.prototype.reduce.call(
+                arguments,
+                function (a, b) {
+                    let ret = [];
+                    a.forEach(function (a) {
+                        b.forEach(function (b) {
+                            ret.push(a.concat([b]));
+                        });
+                    });
+                    return ret;
+                },
+                [[]]
+            );
+        },
+        // 排列组合2
+        perm2() {
+            let arr = [
+                [
+                    "a0",
+                    "a1",
+                    "a2",
+                    "a3",
+                    "a4",
+                    "a5",
+                    "a6",
+                    "a7",
+                    "a8",
+                    "a9",
+                    "a10",
+                    "a11",
+                ],
+                [
+                    "a12",
+                    "a13",
+                    "a14",
+                    "a15",
+                    "a16",
+                    "a17",
+                    "a18",
+                    "a19",
+                    "a20",
+                    "a21",
+                    "a22",
+                    "a23",
+                ],
+            ];
+            let results = [];
+            let result = [];
+            doExchange(arr, 0);
+            function doExchange(arr, index) {
+                for (let i = 0; i < arr[index].length; i++) {
+                    result[index] = arr[index][i];
+                    if (index != arr.length - 1) {
+                        doExchange(arr, index + 1);
+                    } else {
+                        results.push(result.join(","));
+                    }
+                }
+            }
+            console.log(results);
+            console.log(_.chunk(results, 12));
+        },
+        // 排列组合3
+        perm3() {},
+        // 排列组合4
+        perm4() {
+            let arr = arrsAll["arrs"].slice(0, 10);
+            function cmn(m, n, currentIndex = 0, choseArr = [], result = []) {
+                let mLen = m.length;
+                if (currentIndex + n > mLen) {
+                    return;
+                }
+                for (let i = currentIndex; i < mLen; i++) {
+                    if (n === 1) {
+                        result.push([...choseArr, m[i]]);
+                        i + 1 < mLen && cmn(m, n, i + 1, choseArr, result);
+                        break;
+                    }
+                    cmn(m, n - 1, i + 1, [...choseArr, m[i]], result);
+                }
+                return result;
+            }
+            console.log("结果：：", cmn(arr, 2));
+        },
+        // 计算组数
+        initNum(s, z) {
+            this.n = sub(s + 1, s + 1 - z);
+            this.n1 = Math.ceil(sub(s + 1, s + 1 - z) / sub(z + 1, 1));
+            function sub(m, n) {
+                let h = 1;
+                for (let i = n; i < m; i++) {
+                    h *= i;
+                }
+                return h;
+            }
         },
     },
 };
@@ -28,86 +197,5 @@ export default {
 
 <style>
 @import url("https://fonts.googleapis.com/css?family=Source+Sans+Pro");
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    font-family: "Source Sans Pro", sans-serif;
-}
-
-#wrapper {
-    background: radial-gradient(
-        ellipse at top left,
-        rgba(255, 255, 255, 1) 40%,
-        rgba(229, 229, 229, 0.9) 100%
-    );
-    height: 100vh;
-    width: 100vw;
-}
-
-#logo {
-    height: auto;
-    margin-bottom: 20px;
-    width: 420px;
-}
-
-main {
-    display: flex;
-    justify-content: space-between;
-}
-
-main > div {
-    flex-basis: 50%;
-}
-
-.left-side {
-    display: flex;
-    flex-direction: column;
-}
-
-.welcome {
-    color: #555;
-    font-size: 23px;
-    margin-bottom: 10px;
-}
-
-.title {
-    color: #2c3e50;
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 6px;
-}
-
-.title.alt {
-    font-size: 18px;
-    margin-bottom: 10px;
-}
-
-.doc p {
-    color: black;
-    margin-bottom: 10px;
-}
-
-.doc button {
-    font-size: 0.8em;
-    cursor: pointer;
-    outline: none;
-    padding: 0.75em 2em;
-    border-radius: 2em;
-    display: inline-block;
-    color: #fff;
-    background-color: #4fc08d;
-    transition: all 0.15s ease;
-    box-sizing: border-box;
-    border: 1px solid #4fc08d;
-}
-
-.doc button.alt {
-    color: #42b983;
-    background-color: transparent;
-}
+@import url("~@/assets/css/index.css");
 </style>
