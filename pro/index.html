@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vant@2.10/lib/index.css" />
+    <link rel="stylesheet" href="./css/index.css">
+    <link rel="stylesheet" href="./css/public-flex.css">
+    <script src="./js/vue.js"> </script>
+    <script src="https://cdn.jsdelivr.net/npm/vant@2.10/lib/vant.min.js"></script>
+    <title>自定义单词库</title>
+</head>
+
+<body>
+    <div id="app">
+        <div class="en_top flex_items">
+            <div class="en_inps">
+                <input type="text" :value="text12" id="text12">
+                <ul class="flex flex_w">
+                    <li class="en_i_item flex_a_j" v-for="(item,index) in item12" :key="index">{{item}}</li>
+                </ul>
+            </div>
+            <div class="en_t_btns flex j_sb">
+                <!-- <van-button size="small" type="primary" :disabled="isCon" @click="get12">随机12个单词</van-button> -->
+                <van-button size="small" type="info" :disabled="isCon" @click="perm">立即排列</van-button>
+                <van-button size="small" type="info" :disabled="!isCon" @click="copy">复制</van-button>
+                <van-button size="small" type="warning" @click="clear">重置</van-button>
+            </div>
+        </div>
+        <div class="en_radio">
+            <van-field name="radio" label="单选框">
+                <template #input>
+                    <van-radio-group v-model="radio" direction="horizontal" :disabled="!isCon">
+                        <van-radio name="1">10万</van-radio>
+                        <van-radio name="2">30万</van-radio>
+                        <van-radio name="3">50万</van-radio>
+                        <van-radio name="4">100万</van-radio>
+                    </van-radio-group>
+                </template>
+            </van-field>
+        </div>
+        <div class="en_con" ref="enConBox" @scroll="scroll">
+            <input type="text" :value="conText" id="conText">
+            <ul ref="enCon">
+                <li class="en_con_item flex_items j_sb" v-for="(item, index) in nowArr" :key="index">
+                    <span class="en_con_index flex_a_j">{{index}}</span>
+                    <div>
+                        <span class="en_cons" v-for="(k,j) in item" :class="{'active':j < 11}" :key="j">{{k}}</span>
+                    </div>
+                    <div class="en_con_btn flex_items j_sb">
+                        <van-button size="small" :type="(jiluIndex !== -1 && jiluIndex === index) ? 'danger' : 'info'"
+                            :disabled="jiluIndex === index" @click="jiluHandle(index)">
+                            记录一下
+                        </van-button>
+                        <van-button size="small" type="info" @click="copyi(item)">复制</van-button>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <script src="./arrs.js"></script>
+    <script>
+        new Vue({
+            el: "#app",
+            data: {
+                radio: '1',
+                item12: [],
+                text12: "",
+                conText: "",
+                isCon: false,
+                nowArr: [],
+                nowArr2: [],
+                max: 0,
+                jilu: 0,
+                jiluIndex: -1
+            },
+            watch: {
+                radio(val) {
+                    this.nowArr = [];
+                    this.max = val * 1 * 100000;
+                    setTimeout(() => {
+                        this.perm();
+                    }, 100);
+                }
+            },
+            created() {
+                this.max = this.radio * 1 * 100000;
+            },
+            mounted() {
+                this.get12();
+                this.jiluIndex = -1;
+                this.jilu = localStorage.getItem("jilu");
+            },
+            methods: {
+                get12() {
+                    // let out = [];
+                    // let num = 12;
+                    // while (out.length < num) {
+                    //     let temp = (Math.random() * arrs.length) >> 0;
+                    //     out.push(arrs.splice(temp, 1));
+                    // }
+                    // this.item12 = out.flat();
+                    this.item12 = arrs;
+                    this.text12 = this.item12.join(" ");
+                },
+                // 复制
+                copy() {
+                    this.copyTest("text12");
+                },
+                copyi(item) {
+                    this.conText = item.join(" ");
+                    this.$nextTick(() => {
+                        this.copyTest("conText");
+                    });
+                },
+                // 立即排列
+                perm() {
+                    vant.Toast.loading({
+                        forbidClick: true,
+                        loadingType: "spinner",
+                        duration: 0
+                    });
+                    setTimeout(() => {
+                        let arr = this.item12;
+                        let nowArr = [];
+                        nowArr = this.groupSplit(arr, this.max);
+                        this.nowArr2 = nowArr;
+                        if (this.jilu > 0) {
+                            this.nowArr = this.nowArr2.splice(this.jilu + 1, 100);
+                        } else {
+                            this.nowArr = this.nowArr2.splice(0, 100);
+                        }
+                        if (this.nowArr.length > 0) {
+                            vant.Toast.clear();
+                            this.isCon = true;
+                        }
+                    }, 100);
+                },
+                groupSplit(input, max) {
+                    let permArr = []
+                    let usedChars = [];
+
+                    function main(input) {
+                        let i, ch;
+                        for (i = 0; i < input.length; i++) {
+                            ch = input.splice(i, 1)[0];
+                            usedChars.push(ch);
+                            if (input.length == 0) {
+                                permArr.push(usedChars.slice());
+                            }
+                            main(input);
+                            input.splice(i, 0, ch);
+                            usedChars.pop();
+                            if (permArr.length > max) {
+                                break;
+                            }
+                        }
+                        return permArr
+                    }
+                    return main(input);
+                },
+                // 重置
+                clear() {
+                    vant.Toast.loading({
+                        forbidClick: true,
+                        loadingType: "spinner",
+                        duration: 0
+                    });
+                    this.item12 = [];
+                    this.nowArr = [];
+                    setTimeout(() => {
+                        vant.Toast.clear();
+                        this.get12();
+                        localStorage.setItem("jilu", 0);
+                        this.jiluIndex = -1;
+                        this.isCon = false;
+                    }, 200);
+                },
+                // 记录一下
+                jiluHandle(index) {
+                    vant.Toast.loading({
+                        forbidClick: true,
+                        loadingType: "spinner",
+                        duration: 0
+                    });
+                    setTimeout(() => {
+                        localStorage.setItem("jilu", index);
+                        this.jiluIndex = index;
+                        vant.Toast.clear();
+                        vant.Toast('记录成功');
+                    }, 100);
+                },
+                // 滚动到底，每次加100条
+                scroll(e) {
+                    let that = this;
+                    let n = this.nowArr.length;
+                    let scrollTop = e.target.scrollTop;
+                    let enConBox = this.$refs.enConBox.offsetHeight;
+                    let enCon = this.$refs.enCon.offsetHeight
+                    if (scrollTop === enCon - enConBox + 2) {
+                        setTimeout(() => {
+                            that.nowArr = that.nowArr2.splice(n + 1, n + 100);
+                        }, 100);
+                    }
+                },
+                // 复制方法
+                copyTest(id) {
+                    var Url2 = document.getElementById(id);
+                    Url2.select();
+                    document.execCommand("Copy");
+                    vant.Toast('复制成功');
+                },
+            }
+        });
+    </script>
+</body>
+
+</html>
