@@ -161,7 +161,7 @@ export default {
         perm3() {},
         // 排列组合4
         perm4() {
-            let arr = arrsAll["arrs"].slice(0, 10);
+            let arr = arrsAll["arrs"].slice(0, 14);
             function cmn(m, n, currentIndex = 0, choseArr = [], result = []) {
                 let mLen = m.length;
                 if (currentIndex + n > mLen) {
@@ -177,7 +177,7 @@ export default {
                 }
                 return result;
             }
-            console.log("结果：：", cmn(arr, 2));
+            console.log("结果：：", cmn(arr, 12));
         },
         // 计算组数
         initNum(s, z) {
